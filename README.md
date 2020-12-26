@@ -1,2 +1,2 @@
 # vuetify-noteskeeper
-A vuetify app built during Net Ninja Vuetify Tutorial
+A vue app built using vuetify during Net Ninja vuetify tutorial
