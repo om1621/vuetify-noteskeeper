@@ -1,11 +1,11 @@
 <template>
     <div class="notes pa-4 pt-0">
-        <h1 class="headline grey--text ma-3 ma-sm-8 ml-sm-12">
-            Notes 
+        <h1 class="headline grey--text ma-3 ma-sm-8 ml-sm-12" v-bind:class="{'text-center': !loggedIn}">
+            {{heading}}
         </h1>
 
-        <v-container class="mt-sm-16 mt-3">
-            <v-expansion-panels>
+        <v-container class="mt-sm-16 mt-3 d-none" v-bind:class="{'d-block': loggedIn}">
+            <v-expansion-panels> 
                 <v-expansion-panel v-for="(project, i) in myProjects" :key="i">
                     <v-expansion-panel-header>
                         {{project.title}}
@@ -20,12 +20,14 @@
 </template>
 
 <script>
-import db from '../fb'
+import {db, auth} from '../fb'
 export default {
     name: 'Notes',
     data(){
         return {
-            projects: []
+            projects: [],
+            loggedIn: false,
+            heading: ''
         }
     },
     computed:{
@@ -34,18 +36,31 @@ export default {
         }
     },
     created(){
-        db.collection('projects').onSnapshot(res => {
-            const changes = res.docChanges();
 
-            changes.forEach(change => {
-                if(change.type === 'added'){
-                    this.projects.push({
-                        ...change.doc.data(),
-                        id: change.doc.id
-                    });
-                }
-            })
-        });
+        auth.onAuthStateChanged(user => {
+            if(user){
+                this.loggedIn = true;
+                this.heading = "My Projects"
+
+                 db.collection('projects').onSnapshot(res => {
+                    const changes = res.docChanges();
+
+                    changes.forEach(change => {
+                        if(change.type === 'added'){
+                            this.projects.push({
+                                ...change.doc.data(),
+                                id: change.doc.id
+                            });
+                        }
+                    })
+                });
+            }
+            else{
+                this.loggedIn = false;
+                this.heading = 'Log in/Sign up to see your own projects'
+            }
+        })
+       
     }
 }
 </script>

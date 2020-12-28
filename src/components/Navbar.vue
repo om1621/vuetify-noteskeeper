@@ -19,8 +19,8 @@
            <v-spacer></v-spacer>
 
             <v-menu offset-y>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="hidden-xs-only" slot="activator" text color="grey" v-bind="attrs" v-on="on">
+                <template v-slot:activator="{ on, attrs }" >
+                    <v-btn class="hidden-xs-only d-none" slot="activator" text color="grey" v-bind="attrs" v-on="on" v-bind:class="{'d-block': loggedIn}">
                         <v-icon left>
                             expand_more
                         </v-icon>
@@ -37,15 +37,23 @@
                         </v-list-item>
                 </v-list>
             </v-menu>
-           <v-btn text color="grey" >
+            <v-btn text color="grey" router to="/sign-up" class="d-none" v-bind:class="{'d-inline-flex': !loggedIn}" >
+               <v-icon left>login</v-icon>
+               <span>Sign Up</span>
+            </v-btn>
+            <v-btn text color="grey" router to="/log-in" class="d-none" v-bind:class="{'d-inline-flex': !loggedIn}" >
+               <v-icon left>login</v-icon>
+               <span>Log In</span>
+            </v-btn>
+            <v-btn @click="logout" text color="grey" class="d-none" v-bind:class="{'d-inline-flex': loggedIn}">
                <span>Sign Out</span>
                <v-icon right>exit_to_app</v-icon>
-           </v-btn>
+            </v-btn>
        </v-toolbar>
 
        <v-navigation-drawer v-model="drawer" color="teal" app> 
 
-           <v-layout row class="mt-16"> 
+           <v-layout row class=" mt-16 d-none" v-bind:class="{'d-block': loggedIn}"> 
                <v-flex xs8 offset-2 class="align-center text-center">
                    <v-avatar width="100" height="100">
                        <img src="/avatar-1.png" alt="">
@@ -88,6 +96,7 @@
 
 <script>
 import Popup from './Popup.vue'
+import {auth} from '../fb'
 
 export default {
     name: 'Navbar',
@@ -104,22 +113,45 @@ export default {
             },
             {
                 icon: 'note', 
-                text: 'Notes',
-                route: '/notes'
+                text: 'My Projects',
+                route: '/projects'
             },
             {
                 icon: 'people', 
                 text: 'Team',
                 route: '/team'
             }],
-            snackbar: false
+            snackbar: false,
+            loggedIn: false
 
         }
     },
     methods:{
         toggleDrawer: function(){
             this.drawer = !this.drawer;
+        },
+
+        logout: function(){
+            auth.signOut().then(() => {
+                console.log("user logged out")
+            }).catch(err => {
+                console.log(err.message);
+            })
         }
+    },
+    created(){
+
+        auth.onAuthStateChanged(user => {
+            if(user){
+                this.loggedIn = true;
+                console.log(user);
+            }
+            else{
+                this.loggedIn = false;
+                console.log(user);
+            }
+        })
     }
 }
 </script>
+
