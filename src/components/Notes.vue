@@ -6,7 +6,7 @@
 
         <v-container class="mt-sm-16 mt-3 d-none" v-bind:class="{'d-block': loggedIn}">
             <v-expansion-panels> 
-                <v-expansion-panel v-for="(project, i) in myProjects" :key="i">
+                <v-expansion-panel v-for="(project, i) in projects" :key="i">
                     <v-expansion-panel-header>
                         {{project.title}}
                     </v-expansion-panel-header>
@@ -30,11 +30,6 @@ export default {
             heading: ''
         }
     },
-    computed:{
-        myProjects: function() {
-            return this.projects.filter((project) => project.person === "Onkar Telange")  
-        }
-    },
     created(){
 
         auth.onAuthStateChanged(user => {
@@ -46,7 +41,7 @@ export default {
                     const changes = res.docChanges();
 
                     changes.forEach(change => {
-                        if(change.type === 'added'){
+                        if(change.type === 'added' && change.doc.data().userId === user.uid){
                             this.projects.push({
                                 ...change.doc.data(),
                                 id: change.doc.id

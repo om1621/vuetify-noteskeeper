@@ -12,7 +12,7 @@
                 <v-form ref="signUpForm" class="mt-8 px-5 px-sm-5 text-center">
                     <v-text-field v-model="name" type="text" label="Name" prepend-icon="person" :rules="rules"> </v-text-field>
                     <v-text-field v-model="email" type="text" label="Email" prepend-icon="email" :rules="emailRules"> </v-text-field>
-                    <v-text-field v-model="password" type="password" label="Password" prepend-icon="lock" :rules="rules"> </v-text-field>
+                    <v-text-field v-model="password" type="password" label="Password" prepend-icon="lock" :rules="passwordRules"> </v-text-field>
                     <v-btn @click="signUp" class="teal white--text mt-2" :loading="loading">
                         <v-icon left>
                             login
@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import {auth} from '../fb';
+import {db, auth} from '../fb';
 export default {
     name: 'Signup',
     data(){
@@ -43,6 +43,9 @@ export default {
                 v => !!v || "Email is required",
                  v => /.+@.+/.test(v) || 'E-mail must be valid',
             ],
+            passwordRules: [
+                v => v.length >= 6 || "Password should be atleast 6 characters long"
+            ],
             loading: false,
             snackbar: false
         }
@@ -53,8 +56,12 @@ export default {
             if(this.$refs.signUpForm.validate()){
 
                 this.loading = true;
-                auth.createUserWithEmailAndPassword(this.email, this.password).then(res => {
-                    console.log("user added", res);
+                auth.createUserWithEmailAndPassword(this.email, this.password).then((res) => {
+                    return db.collection("users").doc(res.user.uid).set({
+                        name: this.name
+                    });
+                   
+                }).then(() => {
                     this.$router.push('/');
                     this.loading = false;
                 }).catch(err => {

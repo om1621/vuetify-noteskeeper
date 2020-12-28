@@ -16,6 +16,7 @@
                     </template>
                     <v-date-picker v-model="due" ></v-date-picker>
                 </v-menu>
+                <v-select v-model="select" :items="states" item-text="state" item-value="state" label="Select" prepend-icon="query_builder" return-object></v-select>
                 <v-btn @click="test" class="teal white--text" :loading="loading">
                     Add Project
                 </v-btn>
@@ -29,11 +30,17 @@ import {format, parseISO} from 'date-fns'
 import {db} from '../fb'
 export default {
     name: "Popup",
+    props: ['user', 'uid'],
     data(){
         return{
             title: "",
             content: "",
             due: null,
+            select: {state: 'completed'},
+            states: [{state: 'completed'},
+                     {state: 'ongoing'},
+                     {state: 'pending'}
+            ],
             inputRules: [
                 v => v.length >= 5 || "Minimum valid length is 5 characters"
             ],
@@ -44,24 +51,21 @@ export default {
     },
     methods: {
         test: function() {
+           
+                if(this.$refs.form.validate()){
 
-            if(this.$refs.form.validate()){
-
-                this.loading = true;
-
-                const project = {
+                 const project = {
                     title: this.title,
                     content: this.content,
                     dueDate: format(parseISO(this.due), 'do MMM yyyy'),
-                    person: "Onkar Telange",
-                    status: "ongoing"
+                    userId: this.uid,
+                    person: this.user,
+                    status: this.select.state
                 }
 
                 db.collection("projects").add(project).then(() => {
-                    console.log("added");
                     this.loading = false;
                     this.dialog = false;
-
                     this.$emit("showSnackbar");
                 });
             }

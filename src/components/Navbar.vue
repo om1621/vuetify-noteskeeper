@@ -20,7 +20,7 @@
 
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }" >
-                    <v-btn class="hidden-xs-only d-none" slot="activator" text color="grey" v-bind="attrs" v-on="on" v-bind:class="{'d-block': loggedIn}">
+                    <v-btn class="d-none" slot="activator" text color="grey" v-bind="attrs" v-on="on" v-bind:class="{'d-md-block': loggedIn}">
                         <v-icon left>
                             expand_more
                         </v-icon>
@@ -58,11 +58,11 @@
                    <v-avatar width="100" height="100">
                        <img src="/avatar-1.png" alt="">
                    </v-avatar>
-                   <p class="mt-6 subtitile-1 white--text">
-                       Onkar Telange
+                   <p class="mt-6 subtitile-1 white--text text-capitalize">
+                       {{name}}
                    </p>
                     <div class="mb-4">
-                        <Popup @showSnackbar="snackbar = true" />
+                        <Popup @showSnackbar="snackbar = true" v-bind:user="name" v-bind:uid="uid" />
                     </div>
                    
                </v-flex>
@@ -96,7 +96,7 @@
 
 <script>
 import Popup from './Popup.vue'
-import {auth} from '../fb'
+import {auth, db} from '../fb'
 
 export default {
     name: 'Navbar',
@@ -105,6 +105,8 @@ export default {
     },
     data(){
         return {
+            name: '',
+            uid: '',
             drawer: false,
             links: [{
                 icon: 'dashboard', 
@@ -144,11 +146,18 @@ export default {
         auth.onAuthStateChanged(user => {
             if(user){
                 this.loggedIn = true;
-                console.log(user);
+                this.uid = user.uid;
+                db.collection('users').doc(user.uid).get().then(res => {
+                    if(res.exists){
+                        this.name = res.data().name;
+                    }
+                    else{
+                        console.log("No document found");
+                    }
+                })
             }
             else{
                 this.loggedIn = false;
-                console.log(user);
             }
         })
     }
